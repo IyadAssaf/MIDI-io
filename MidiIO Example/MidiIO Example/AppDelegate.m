@@ -37,8 +37,6 @@
         self.label.stringValue = [self.label.stringValue stringByAppendingString:[NSString stringWithFormat:@"\n %d: %@", i, [inputDevices objectAtIndex:i]]];
     }
 
-//    [midi sendMIDINote];
-
     for(int i=0; i<127; i++)
     {
         [midi sendNote:i :67];

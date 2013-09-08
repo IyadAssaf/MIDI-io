@@ -13,9 +13,9 @@
 		E21976CB17DBF39B0088188B /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = E21976C917DBF39B0088188B /* Credits.rtf */; };
 		E21976CE17DBF39B0088188B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E21976CD17DBF39B0088188B /* AppDelegate.m */; };
 		E21976D117DBF39C0088188B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = E21976CF17DBF39C0088188B /* MainMenu.xib */; };
-		E21976D917DBF3BA0088188B /* MidiIO.m in Sources */ = {isa = PBXBuildFile; fileRef = E21976D817DBF3BA0088188B /* MidiIO.m */; };
 		E21976DC17DBF3CA0088188B /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E21976DB17DBF3CA0088188B /* CoreMIDI.framework */; };
 		E21976DE17DBF4BD0088188B /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E21976DD17DBF4BD0088188B /* AudioUnit.framework */; };
+		E2279EA017DC17AD00990195 /* MidiIO.m in Sources */ = {isa = PBXBuildFile; fileRef = E2279E9F17DC17AD00990195 /* MidiIO.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,10 +32,10 @@
 		E21976CC17DBF39B0088188B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		E21976CD17DBF39B0088188B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		E21976D017DBF39C0088188B /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		E21976D717DBF3BA0088188B /* MidiIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MidiIO.h; path = lib/MidiIO.h; sourceTree = SOURCE_ROOT; };
-		E21976D817DBF3BA0088188B /* MidiIO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MidiIO.m; path = lib/MidiIO.m; sourceTree = SOURCE_ROOT; };
 		E21976DB17DBF3CA0088188B /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 		E21976DD17DBF4BD0088188B /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
+		E2279E9E17DC17AD00990195 /* MidiIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MidiIO.h; sourceTree = "<group>"; };
+		E2279E9F17DC17AD00990195 /* MidiIO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MidiIO.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,9 +93,9 @@
 		E21976C017DBF39B0088188B /* MidiIO Example */ = {
 			isa = PBXGroup;
 			children = (
+				E2279E9D17DC17AD00990195 /* lib */,
 				E21976CC17DBF39B0088188B /* AppDelegate.h */,
 				E21976CD17DBF39B0088188B /* AppDelegate.m */,
-				E21976DA17DBF3BF0088188B /* MidiIO */,
 				E21976CF17DBF39C0088188B /* MainMenu.xib */,
 				E21976C117DBF39B0088188B /* Supporting Files */,
 			);
@@ -114,13 +114,14 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		E21976DA17DBF3BF0088188B /* MidiIO */ = {
+		E2279E9D17DC17AD00990195 /* lib */ = {
 			isa = PBXGroup;
 			children = (
-				E21976D717DBF3BA0088188B /* MidiIO.h */,
-				E21976D817DBF3BA0088188B /* MidiIO.m */,
+				E2279E9E17DC17AD00990195 /* MidiIO.h */,
+				E2279E9F17DC17AD00990195 /* MidiIO.m */,
 			);
-			name = MidiIO;
+			name = lib;
+			path = ../../lib;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -189,7 +190,7 @@
 			files = (
 				E21976C717DBF39B0088188B /* main.m in Sources */,
 				E21976CE17DBF39B0088188B /* AppDelegate.m in Sources */,
-				E21976D917DBF3BA0088188B /* MidiIO.m in Sources */,
+				E2279EA017DC17AD00990195 /* MidiIO.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -325,6 +326,7 @@
 				E21976D617DBF39C0088188B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
