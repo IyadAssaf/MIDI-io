@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreMIDI/CoreMIDI.h>
+#import <AudioUnit/AudioUnit.h>
 
 @interface MidiIO : NSObject
 
