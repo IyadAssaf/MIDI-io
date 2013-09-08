@@ -22,6 +22,7 @@
 -(void)addInputDevice:(NSString *)device;
 -(void)removeInputDevice:(NSString *)device;
 
+-(void)disposeInputDevices;
 
 /* MIDI Output */
 -(NSArray *)outputDevices;
@@ -29,10 +30,20 @@
 -(void)addOutputDevice:(NSString *)device;
 -(void)removeOutputDevice:(NSString *)device;
 
--(void)sendMIDINote:(int)note :(int)velocity;
+-(void)sendNote:(int)pitch :(int)vel;
+
+
+
+
+
+
 -(void)sendMIDIControl:(int)note :(int)velocity;
+
+-(void)clear;
 
 -(void)sendMIDINoteToDevice:(int)note :(int)velocity :(NSString *)device;
 -(void)sendMIDIControlToDevice:(int)note :(int)velocity :(NSString *)device;
+
+-(void)disposeOutputDevices;
 
 @end

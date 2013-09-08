@@ -12,8 +12,57 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    MidiIO *midiOut = [[MidiIO alloc] init];
-    self.inputDevice.stringValue = @"Launchpad";
+    midi = [[MidiIO alloc] init];
+    
+    [midi addOutputDevice:@"Launchpad"];
+    
+    
 }
 
+-(void)applicationWillTerminate:(NSNotification *)notification
+{
+    [midi disposeInputDevices];
+    [midi disposeOutputDevices];
+    
+    
+}
+
+- (IBAction)listInputDevices:(id)sender {
+    
+    NSArray *inputDevices = [midi inputDevices];
+    self.label.stringValue = @"";
+    
+    for(int i=0; i<inputDevices.count; i++)
+    {
+        self.label.stringValue = [self.label.stringValue stringByAppendingString:[NSString stringWithFormat:@"\n %d: %@", i, [inputDevices objectAtIndex:i]]];
+    }
+
+//    [midi sendMIDINote];
+
+    for(int i=0; i<127; i++)
+    {
+        [midi sendNote:i :67];
+    }
+    
+    for(int i=0; i<127; i++)
+    {
+        [midi sendNote:i :42];
+    }
+    
+    
+    
+//    [midi clear];
+    
+}
+
+- (IBAction)listOutputDevices:(id)sender {
+    
+    NSArray *outputDevices = [midi outputDevices];
+    self.label.stringValue = @"";
+    
+    for(int i=0; i<outputDevices.count; i++)
+    {        
+        self.label.stringValue = [self.label.stringValue stringByAppendingString:[NSString stringWithFormat:@"\n %d: %@", i, [outputDevices objectAtIndex:i]]];
+    }
+}
 @end

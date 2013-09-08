@@ -10,11 +10,19 @@
 #import "MidiIO.h"
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
+{
+    MidiIO *midi;
+}
 
 @property (assign) IBOutlet NSWindow *window;
 
 @property (weak) IBOutlet NSTextField *inputDevice;
 @property (weak) IBOutlet NSTextFieldCell *outputDevice;
 
+- (IBAction)listInputDevices:(id)sender;
+
+- (IBAction)listOutputDevices:(id)sender;
+
+@property (weak) IBOutlet NSTextField *label;
 
 @end

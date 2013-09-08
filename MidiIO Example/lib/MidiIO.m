@@ -84,7 +84,13 @@ static void	MIDIRead(const MIDIPacketList *pktlist, void *refCon, void *srcConnR
             
             NSLog(@"%s - NOTE : %d | %d", source, note, velocity);
             
-            midiNoteOut(note, velocity);
+            if(velocity != 0)
+            {
+                midiNoteOut(note, 14);
+            } else {
+                midiNoteOut(note, 121);
+            }
+        
             
             
 		} else {
@@ -159,8 +165,22 @@ void midiNoteOut (int note, int velocity)
                       size,
                       noteOutData);
     
-    MIDIEndpointRef outputEndpoint = MIDIGetDestination(0);
-    MIDISend(outputPort, outputEndpoint, packetList);
+    if(outputDevices.count)
+    {
+        //Send MIDI to all devices in the outputDevices array
+        for(int i=0; i<outputDevices.count; i++)
+        {
+            MIDIEndpointRef outputEndpoint = MIDIGetDestination([listOutputSources() indexOfObject:[outputDevices objectAtIndex:i]]);
+            MIDISend(outputPort, outputEndpoint, packetList);
+        }
+    } else {
+        
+        //Send to the default - 0
+        MIDIEndpointRef outputEndpoint = MIDIGetDestination(0);
+        MIDISend(outputPort, outputEndpoint, packetList);
+        
+    }
+    
     
     
 }
@@ -177,7 +197,7 @@ NSArray *listOutputSources ()
         MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
         char endpointNameC[255];
         CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
-        NSLog(@"Output device %d - %s", i, endpointNameC);
+//        NSLog(@"Output device %d - %s", i, endpointNameC);
         
         NSString *NSEndpoint = [NSString stringWithUTF8String:endpointNameC];
         [outputArray addObject: NSEndpoint];
@@ -196,7 +216,6 @@ void disposeOutput ()
 
 
 
-
 #pragma mark Obj-C methods
 
 - (id)init
@@ -205,7 +224,6 @@ void disposeOutput ()
     if (self) {
 
         //For midi in:
-        
         disposeInput();
         disposeOutput();
         
@@ -221,7 +239,7 @@ void disposeOutput ()
         
         for(int i=0; i<127; i++)
         {
-            midiNoteOut(i, 0);
+            midiNoteOut(i, 4);
         }
 
         
@@ -257,8 +275,10 @@ void disposeOutput ()
 }
 
 
-
-
+-(void)disposeInputDevices
+{
+    disposeInput();
+}
 
 
 
@@ -272,14 +292,41 @@ void disposeOutput ()
     return listOutputSources();
 }
 
-
-
-
-
--(void)sendNoteOut:(int)note :(int)velocity
+-(void)addOutputDevice:(NSString *)device
 {
-    midiNoteOut(note, velocity);
+    NSLog(@"Added output device: %@", device);
+    [outputDevices addObject:device];
+}
+
+-(void)removeOutputDevice:(NSString *)device
+{
+    [outputDevices removeObject:device];
+}
+
+
+-(void)clear
+{
+    for(int i=0; i<127; i++)
+    {
+        midiNoteOut(i, 127);
+    }
     
+    for(int i=0; i<127; i++)
+    {
+        midiNoteOut(i, 4);
+    }
+
+}
+
+-(void)sendNote:(int)pitch :(int)vel;
+{
+    midiNoteOut(pitch, vel);
+}
+
+
+-(void)disposeOutputDevices
+{
+    disposeOutput();
 }
 
 @end
