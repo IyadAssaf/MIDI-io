@@ -14,4 +14,25 @@
 
 -(id)init;
 
+/* MIDI Input */
+
+-(void)reInitializeMIDIInput;
+-(NSArray *)inputDevices;
+
+-(void)addInputDevice:(NSString *)device;
+-(void)removeInputDevice:(NSString *)device;
+
+
+/* MIDI Output */
+-(NSArray *)outputDevices;
+
+-(void)addOutputDevice:(NSString *)device;
+-(void)removeOutputDevice:(NSString *)device;
+
+-(void)sendMIDINote:(int)note :(int)velocity;
+-(void)sendMIDIControl:(int)note :(int)velocity;
+
+-(void)sendMIDINoteToDevice:(int)note :(int)velocity :(NSString *)device;
+-(void)sendMIDIControlToDevice:(int)note :(int)velocity :(NSString *)device;
+
 @end

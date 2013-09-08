@@ -10,52 +10,21 @@
 
 @implementation MidiIO
 
-#pragma mark Midi Output
-/* OUTPUT */
+#pragma mark variables
+/* VARIABLES */
+
+//Input variables
+MIDIClientRef   inClient;
+MIDIPortRef     inPort;
+AudioUnit       instrumentUnit;
+NSMutableArray *inputDevices;
+
 
 //Output variables
 MIDIClientRef           outClient;
 MIDIPortRef             outputPort;
 MIDIEndpointRef         midiOut;
-
-void initMIDIOut()
-{
-    //Create the MIDI client and MIDI output port.
-    MIDIClientCreate((CFStringRef)@"Midi client", NULL, NULL, &outClient);
-    MIDIOutputPortCreate(outClient, (CFStringRef)@"Output port", &outputPort);
-    
-}
-
-void midiNoteOut (int note, int velocity)
-{
-    //Set up the data to be sent
-    const UInt8 noteOutData[] = {  0x90 , note , velocity};
-    
-    
-    //Create a the packets that will be sent to the device.
-    Byte packetBuffer[sizeof(MIDIPacketList)];
-    MIDIPacketList *packetList = (MIDIPacketList *)packetBuffer;
-    ByteCount size = sizeof(noteOutData);
-    
-    MIDIPacketListAdd(packetList,
-                      sizeof(packetBuffer),
-                      MIDIPacketListInit(packetList),
-                      0,
-                      size,
-                      noteOutData);
-    
-    MIDIEndpointRef outputEndpoint = MIDIGetDestination(0);
-    MIDISend(outputPort, outputEndpoint, packetList);
-    
-    
-}
-
-void disposeOutput ()
-{
-    MIDIClientDispose(outClient);
-    MIDIPortDispose(outputPort);
-}
-
+NSMutableArray          *outputDevices;
 
 
 
@@ -63,15 +32,9 @@ void disposeOutput ()
 
 #pragma mark Midi Input
 
-
-MIDIClientRef   inClient;
-MIDIPortRef     inPort;
-AudioUnit       instrumentUnit;
-
-
 void setupMidiInput()
 {
-    MIDIClientCreate(CFSTR("SuperSimpleMIDIIn"), NotificationProc, instrumentUnit, &inClient);
+    MIDIClientCreate(CFSTR("MidiIOInput"), NotificationProc, instrumentUnit, &inClient);
 	MIDIInputPortCreate(inClient, CFSTR("Input port"), MIDIRead, instrumentUnit, &inPort);
     
     MIDIEndpointRef source = MIDIGetSource(0);
@@ -86,6 +49,7 @@ void setupMidiInput()
     
     NSLog(@"Getting input from %@", input);
     
+    //Read from this device - can read from many at the same time.
     MIDIPortConnectSource(inPort, source, (void*)[input UTF8String]);
     
 }
@@ -135,12 +99,100 @@ static void	MIDIRead(const MIDIPacketList *pktlist, void *refCon, void *srcConnR
     
 }
 
+NSArray *listInputSources ()
+{
+    NSMutableArray *sourceArray = [[NSMutableArray alloc] init];
+    unsigned long sourceCount = MIDIGetNumberOfSources();
+    
+    for (int i=0; i<sourceCount; i++) {
+        MIDIEndpointRef source = MIDIGetSource(i);
+        CFStringRef endpointName = NULL;
+        MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
+        char endpointNameC[255];
+        CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
+        
+        NSString *NSEndpoint = [NSString stringWithUTF8String:endpointNameC];
+        [sourceArray addObject: NSEndpoint];
+    }
+    return (NSArray *)sourceArray;
+}
+
 
 void disposeInput ()
 {
     MIDIClientDispose(inClient);
     MIDIPortDispose(inPort);
 }
+
+
+
+
+
+
+
+#pragma mark Midi Output
+/* OUTPUT */
+
+void initMIDIOut()
+{
+    //Create the MIDI client and MIDI output port.
+    MIDIClientCreate((CFStringRef)@"MidiIOOutput", NULL, NULL, &outClient);
+    MIDIOutputPortCreate(outClient, (CFStringRef)@"Output port", &outputPort);
+    
+}
+
+void midiNoteOut (int note, int velocity)
+{
+    //Set up the data to be sent
+    const UInt8 noteOutData[] = {  0x90 , note , velocity};
+    
+    
+    //Create a the packets that will be sent to the device.
+    Byte packetBuffer[sizeof(MIDIPacketList)];
+    MIDIPacketList *packetList = (MIDIPacketList *)packetBuffer;
+    ByteCount size = sizeof(noteOutData);
+    
+    MIDIPacketListAdd(packetList,
+                      sizeof(packetBuffer),
+                      MIDIPacketListInit(packetList),
+                      0,
+                      size,
+                      noteOutData);
+    
+    MIDIEndpointRef outputEndpoint = MIDIGetDestination(0);
+    MIDISend(outputPort, outputEndpoint, packetList);
+    
+    
+}
+
+
+NSArray *listOutputSources ()
+{
+    NSMutableArray *outputArray = [[NSMutableArray alloc] init];
+    unsigned long outputCount = MIDIGetNumberOfDestinations();
+    
+    for (int i=0; i<outputCount; i++) {
+        MIDIEndpointRef source = MIDIGetDestination(i);
+        CFStringRef endpointName = NULL;
+        MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
+        char endpointNameC[255];
+        CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
+        NSLog(@"Output device %d - %s", i, endpointNameC);
+        
+        NSString *NSEndpoint = [NSString stringWithUTF8String:endpointNameC];
+        [outputArray addObject: NSEndpoint];
+    }
+    return (NSArray *)outputArray;
+}
+
+
+void disposeOutput ()
+{
+    MIDIClientDispose(outClient);
+    MIDIPortDispose(outputPort);
+}
+
+
 
 
 
@@ -156,30 +208,72 @@ void disposeInput ()
         
         disposeInput();
         disposeOutput();
+        
         setupMidiInput();
         
         //For midi out:
         initMIDIOut();
         
+        for(int i=0; i<127; i++)
+        {
+            midiNoteOut(i, 127);
+        }
         
-//        for(int i=0; i<127; i++)
-//        {
-//            midiNoteOut(i, 0);
-//            [NSThread sleepForTimeInterval:0.000001];
-//        }
-//        
-//        for(int i=0; i<127; i++)
-//        {
-//            midiNoteOut(i, 1);
-//            [NSThread sleepForTimeInterval:0.001];
-//        }
-//        
-//        midiNoteOut(2, 60);
-//        midiNoteOut(5, 63);
+        for(int i=0; i<127; i++)
+        {
+            midiNoteOut(i, 0);
+        }
+
         
     }
     return self;
 }
+
+
+
+
+#pragma mark Obj-C Input methods
+
+-(void)reInitializeMIDIInput
+{
+    disposeInput();
+    setupMidiInput();
+}
+
+
+-(NSArray *)inputDevices
+{
+    return listInputSources();
+}
+
+-(void)addInputDevice:(NSString *)device
+{
+    [inputDevices addObject:device];
+}
+
+-(void)removeInputDevice:(NSString *)device
+{
+    [inputDevices removeObject:device];
+}
+
+
+
+
+
+
+
+
+
+#pragma mark Obj-C Output methods
+
+
+-(NSArray *)outputDevices
+{
+    return listOutputSources();
+}
+
+
+
 
 
 -(void)sendNoteOut:(int)note :(int)velocity

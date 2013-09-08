@@ -13,6 +13,7 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     MidiIO *midiOut = [[MidiIO alloc] init];
+    self.inputDevice.stringValue = @"Launchpad";
 }
 
 @end

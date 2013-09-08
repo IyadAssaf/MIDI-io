@@ -13,4 +13,8 @@
 
 @property (assign) IBOutlet NSWindow *window;
 
+@property (weak) IBOutlet NSTextField *inputDevice;
+@property (weak) IBOutlet NSTextFieldCell *outputDevice;
+
+
 @end
