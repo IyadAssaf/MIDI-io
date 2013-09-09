@@ -13,7 +13,7 @@
 
 @protocol MidiIODelegate <NSObject>
 
--(void)recievedNote:(int)n :(int)v;
+-(void)recievedNote:(int)note :(int)velocity :(NSString *)device;
 -(void)recievedControl:(int)n :(int)v;
 
 @end

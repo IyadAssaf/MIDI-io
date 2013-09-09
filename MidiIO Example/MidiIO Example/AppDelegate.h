@@ -24,5 +24,6 @@
 - (IBAction)listOutputDevices:(id)sender;
 
 @property (weak) IBOutlet NSTextField *label;
+@property (weak) IBOutlet NSTextField *monitor;
 
 @end

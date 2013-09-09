@@ -37,13 +37,14 @@ static MidiIO *delegate = NULL;
 // call at runtime with your actual delegate
 void setCallbackDelegate ( MidiIO* del ) { delegate = del; }
 
-void noteCallback (int note, int velocity)
+void noteCallback (int note, int velocity, NSString *device)
 {
-    [delegate recievedNote:note :velocity];
+    [delegate recievedNote:note :velocity :device];
 }
 
 void controlCallback(int note, int velocity)
 {
+    NSLog(@"ControlCallback: %d %d", note, velocity);
     [delegate recievedControl:note :velocity];
 }
 
@@ -69,13 +70,13 @@ void setupMidiInput()
             CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
             
             NSString *input = [inputDevices objectAtIndex:i];
-            
             NSLog(@"Getting input from %@", input);
             
-            //This needs to be fixed, it isn't passing the name properly.
-            MIDIPortConnectSource(inPort, source, (void*)[input UTF8String]);
+            const char *inputCC = MakeStringCopy([input UTF8String]);
             
+            MIDIPortConnectSource(inPort, source, (void*)inputCC);
         }
+        
     } else {
         
         //Default: If no input sources have been selected.
@@ -87,33 +88,46 @@ void setupMidiInput()
         CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
         
         NSString *input = @"Launchpad";
-        
         NSLog(@"Getting input from %@", input);
         
-        //This needs to be fixed, it isn't passing the name properly.
-        MIDIPortConnectSource(inPort, source, (void*)[input UTF8String]);
+        const char *inputCC = MakeStringCopy([input UTF8String]);
+        MIDIPortConnectSource(inPort, source, (void*)inputCC);
     }
-    
+
     
 //    MIDIEndpointRef source = MIDIGetSource(0);
-    MIDIEndpointRef source = MIDIGetSource(4);
-    
-    
-    CFStringRef endpointName = NULL;
-    MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
-    char endpointNameC[255];
-    CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
-    
-//    NSString *input = @"Launchpad";
-    NSString *input = @"Controls";
-    
-    
-    NSLog(@"Getting input from %@", input);
-    
-    //Read from this device - can read from many at the same time.
-    MIDIPortConnectSource(inPort, source, (void*)[input UTF8String]);
-    
+//    MIDIEndpointRef source = MIDIGetSource(4);
+//    
+//    
+//    CFStringRef endpointName = NULL;
+//    MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
+//    char endpointNameC[255];
+//    CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
+//    
+////    NSString *input = @"Launchpad";
+//    NSString *input = @"TEST TEST TEST";
+//    
+//    const char *inputCC = MakeStringCopy([input UTF8String]);
+//    MIDIPortConnectSource(inPort, source, (void *)inputCC);
+//    
 }
+
+
+/* Conversion of NSString to const char * */
+char* MakeStringCopy (const char* string)
+{
+    if (string == NULL)
+        return NULL;
+    
+    char* res = (char*)malloc(strlen(string) + 1);
+    strcpy(res, string);
+    return res;
+}
+
+
+
+
+
 
 //CoreMIDIutilities
 #pragma mark CoreMIDI utilities
@@ -142,26 +156,23 @@ static void	MIDIRead(const MIDIPacketList *pktlist, void *refCon, void *srcConnR
 			(midiCommand == 0x08)) { //note off
 			
             MusicDeviceMIDIEvent(instrumentUnit, midiStatus, note, velocity, 0);
+    
+        
+//            NSLog(@"Source: %s", source);
             
-//            NSLog(@"%s - NOTE : %d | %d", source, note, velocity);
+//            NSLog(@"Source: %@",[NSString stringWithUTF8String:source]);
 
-
-            noteCallback(note, velocity);
+            noteCallback(note, velocity, [NSString stringWithUTF8String:source]);
         
 
-//            
-//            if(velocity != 0)
-//            {
-//                midiNoteOut(note, 14);
-//            } else {
-//                midiNoteOut(note, 121);
-//            }
-        
+
             
             
 		} else {
             
             NSLog(@"%s - CNTRL  : %d | %d", source, note, velocity);
+            
+//            NSLog(@"Source: %@", [NSString stringWithUTF8String:source]);
             
             controlCallback(note, velocity);
             
@@ -290,39 +301,9 @@ void disposeOutput ()
 {
     self = [super init];
     if (self) {
-        
-    NSLog(@"Init");
-        
-
-//        void setCallbackDelegate ( MidiIO* del ) { delegate = del; }
-        
-
-//        [[self myDelegate] test];
-
-        //For midi in:
-//        disposeInput();
-//        disposeOutput();
-        
-//        setupMidiInput();
-        
-        //For midi out:
-//        initMIDIOut();
-        
-//        for(int i=0; i<127; i++)
-//        {
-//            midiNoteOut(i, 127);
-//        }
-//        
-//        for(int i=0; i<127; i++)
-//        {
-//            midiNoteOut(i, 4);
-//        }
-
-        
+    
         
     }
-    
-
     return self;
 }
 

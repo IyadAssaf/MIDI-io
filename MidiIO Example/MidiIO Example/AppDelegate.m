@@ -24,7 +24,6 @@
     [midi initMidiInput];
     [midi initMidiOut];
     
-    
 }
 
 -(void)applicationWillTerminate:(NSNotification *)notification
@@ -71,15 +70,31 @@
     }
 }
 
--(void)recievedNote:(int)n :(int)v
-{
-    NSLog(@"App Delegate! Recieved note: %d with velocity %d", n, v);
-    [midi sendNote:n :v];
-}
 
--(void)test
+/* MIDI input callbacks */
+
+-(void)recievedNote:(int)note :(int)velocity :(NSString *)device
 {
+    NSLog(@"App Delegate! Recieved note: %d with velocity %d from device %@", note, velocity, device);
+    
+    self.monitor.stringValue = [NSString stringWithFormat:@"Source: %@, Note: %d, Velocity: %d",device, note, velocity];
+    
+    
+    if(velocity != 0)
+    {
+        [midi sendNote:note :14];
+    } else {
+        [midi sendNote:note :121];
+    }
     
 }
+
+-(void)recievedControl:(int)n :(int)v
+{
+    NSLog(@"App Delegate! Recieved control: %d with velocity %d", n, v);
+    
+    self.monitor.stringValue = [NSString stringWithFormat:@"Control: %d Velocity: %d", n, v];
+}
+
 
 @end
