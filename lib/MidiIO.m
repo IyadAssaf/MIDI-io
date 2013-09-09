@@ -42,10 +42,9 @@ void noteCallback (int note, int velocity, NSString *device)
     [delegate recievedNote:note :velocity :device];
 }
 
-void controlCallback(int note, int velocity)
-{
-    NSLog(@"ControlCallback: %d %d", note, velocity);
-    [delegate recievedControl:note :velocity];
+void controlCallback(int note, int velocity, NSString *device)
+{;
+    [delegate recievedControl:note :velocity :device];
 }
 
 
@@ -56,13 +55,12 @@ void setupMidiInput()
     MIDIClientCreate(CFSTR("MidiIOInput"), NotificationProc, instrumentUnit, &inClient);
 	MIDIInputPortCreate(inClient, CFSTR("Input port"), MIDIRead, instrumentUnit, &inPort);
     
+    
     if(inputDevices.count)
     {
         for(int i=0; i<inputDevices.count; i++)
         {
-            MIDIEndpointRef source = MIDIGetSource((int)[listInputSources() indexOfObject:[inputDevices objectAtIndex:i]]); //Or something like that..
-            
-            NSLog(@"Getting input from source: %d", (int)[listInputSources() indexOfObject:[inputDevices objectAtIndex:i]]);
+            MIDIEndpointRef source = MIDIGetSource((int)[listInputSources() indexOfObject:[inputDevices objectAtIndex:i]]);
             
             CFStringRef endpointName = NULL;
             MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
@@ -79,6 +77,8 @@ void setupMidiInput()
         
     } else {
         
+        NSLog(@"DEFAULT");
+        
         //Default: If no input sources have been selected.
         MIDIEndpointRef source = MIDIGetSource(0);
         
@@ -94,22 +94,6 @@ void setupMidiInput()
         MIDIPortConnectSource(inPort, source, (void*)inputCC);
     }
 
-    
-//    MIDIEndpointRef source = MIDIGetSource(0);
-//    MIDIEndpointRef source = MIDIGetSource(4);
-//    
-//    
-//    CFStringRef endpointName = NULL;
-//    MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
-//    char endpointNameC[255];
-//    CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
-//    
-////    NSString *input = @"Launchpad";
-//    NSString *input = @"TEST TEST TEST";
-//    
-//    const char *inputCC = MakeStringCopy([input UTF8String]);
-//    MIDIPortConnectSource(inPort, source, (void *)inputCC);
-//    
 }
 
 
@@ -155,26 +139,13 @@ static void	MIDIRead(const MIDIPacketList *pktlist, void *refCon, void *srcConnR
 		if ((midiCommand == 0x09) || //note on
 			(midiCommand == 0x08)) { //note off
 			
-            MusicDeviceMIDIEvent(instrumentUnit, midiStatus, note, velocity, 0);
-    
-        
-//            NSLog(@"Source: %s", source);
-            
-//            NSLog(@"Source: %@",[NSString stringWithUTF8String:source]);
-
+            //Send callback to objective-C
             noteCallback(note, velocity, [NSString stringWithUTF8String:source]);
-        
-
-
-            
             
 		} else {
-            
-            NSLog(@"%s - CNTRL  : %d | %d", source, note, velocity);
-            
-//            NSLog(@"Source: %@", [NSString stringWithUTF8String:source]);
-            
-            controlCallback(note, velocity);
+        
+            //Send callback to objective-C
+            controlCallback(note, velocity, [NSString stringWithUTF8String:source]);
             
         }
 		
@@ -301,7 +272,9 @@ void disposeOutput ()
 {
     self = [super init];
     if (self) {
-    
+        
+        inputDevices = [[NSMutableArray alloc] init];
+        outputDevices = [[NSMutableArray alloc] init];
         
     }
     return self;
@@ -332,6 +305,7 @@ void disposeOutput ()
 
 -(void)addInputDevice:(NSString *)device
 {
+    NSLog(@"Added input device: %@", device);
     [inputDevices addObject:device];
 }
 

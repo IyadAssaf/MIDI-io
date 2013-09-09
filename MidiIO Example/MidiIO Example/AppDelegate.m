@@ -15,12 +15,15 @@
     midi = [[MidiIO alloc] init];
     [midi setMyDelegate:self];
     
-    [midi addInputDevice:@"Controls"];
     [midi addInputDevice:@"Launchpad"];
+    [midi addInputDevice:@"Controls"];
+    [midi addInputDevice:@"PCR 1"];
+    [midi addInputDevice:@"PCR 2"];
+    [midi addInputDevice:@"PCR MIDI IN"];
     
-    [midi addOutputDevice:@"Launchpad"];
     [midi addOutputDevice:@"Controls"];
-
+    [midi addOutputDevice:@"Launchpad"];
+    
     [midi initMidiInput];
     [midi initMidiOut];
     
@@ -75,10 +78,9 @@
 
 -(void)recievedNote:(int)note :(int)velocity :(NSString *)device
 {
-    NSLog(@"App Delegate! Recieved note: %d with velocity %d from device %@", note, velocity, device);
+    NSLog(@"Recieved note: %d with velocity %d from device %@", note, velocity, device);
     
     self.monitor.stringValue = [NSString stringWithFormat:@"Source: %@, Note: %d, Velocity: %d",device, note, velocity];
-    
     
     if(velocity != 0)
     {
@@ -89,11 +91,12 @@
     
 }
 
--(void)recievedControl:(int)n :(int)v
+-(void)recievedControl:(int)note :(int)velocity :(NSString *)device
 {
-    NSLog(@"App Delegate! Recieved control: %d with velocity %d", n, v);
+    NSLog(@"Recieved control: %d with velocity %d from device %@", note, velocity, device);
     
-    self.monitor.stringValue = [NSString stringWithFormat:@"Control: %d Velocity: %d", n, v];
+    self.monitor.stringValue = [NSString stringWithFormat:@"Source: %@, Control: %d, Velocity: %d",device, note, velocity];
+    
 }
 
 

@@ -12,6 +12,7 @@
 @interface AppDelegate : NSObject <NSApplicationDelegate, MidiIODelegate>
 {
     MidiIO *midi;
+    
 }
 
 @property (assign) IBOutlet NSWindow *window;
