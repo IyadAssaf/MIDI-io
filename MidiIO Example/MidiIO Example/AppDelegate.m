@@ -13,8 +13,16 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     midi = [[MidiIO alloc] init];
+    [midi setMyDelegate:self];
+    
+    [midi addInputDevice:@"Controls"];
+    [midi addInputDevice:@"Launchpad"];
     
     [midi addOutputDevice:@"Launchpad"];
+    [midi addOutputDevice:@"Controls"];
+
+    [midi initMidiInput];
+    [midi initMidiOut];
     
     
 }
@@ -23,8 +31,6 @@
 {
     [midi disposeInputDevices];
     [midi disposeOutputDevices];
-    
-    
 }
 
 - (IBAction)listInputDevices:(id)sender {
@@ -46,11 +52,7 @@
     {
         [midi sendNote:i :42];
     }
-    
-    
-    
-//    [midi clear];
-    
+
 }
 
 - (IBAction)listOutputDevices:(id)sender {
@@ -62,5 +64,22 @@
     {        
         self.label.stringValue = [self.label.stringValue stringByAppendingString:[NSString stringWithFormat:@"\n %d: %@", i, [outputDevices objectAtIndex:i]]];
     }
+    
+    for(int i=0; i<127; i++)
+    {
+        [midi sendNote:i :0];
+    }
 }
+
+-(void)recievedNote:(int)n :(int)v
+{
+    NSLog(@"App Delegate! Recieved note: %d with velocity %d", n, v);
+    [midi sendNote:n :v];
+}
+
+-(void)test
+{
+    
+}
+
 @end

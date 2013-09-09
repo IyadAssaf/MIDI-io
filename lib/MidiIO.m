@@ -10,6 +10,7 @@
 
 @implementation MidiIO
 
+
 #pragma mark variables
 /* VARIABLES */
 
@@ -28,6 +29,23 @@ NSMutableArray          *outputDevices;
 
 
 
+/* SHOULD WORK */
+
+// need to have a reference to the object, of course
+static MidiIO *delegate = NULL;
+
+// call at runtime with your actual delegate
+void setCallbackDelegate ( MidiIO* del ) { delegate = del; }
+
+void noteCallback (int note, int velocity)
+{
+    [delegate recievedNote:note :velocity];
+}
+
+void controlCallback(int note, int velocity)
+{
+    [delegate recievedControl:note :velocity];
+}
 
 
 #pragma mark Midi Input
@@ -37,7 +55,48 @@ void setupMidiInput()
     MIDIClientCreate(CFSTR("MidiIOInput"), NotificationProc, instrumentUnit, &inClient);
 	MIDIInputPortCreate(inClient, CFSTR("Input port"), MIDIRead, instrumentUnit, &inPort);
     
-    MIDIEndpointRef source = MIDIGetSource(0);
+    if(inputDevices.count)
+    {
+        for(int i=0; i<inputDevices.count; i++)
+        {
+            MIDIEndpointRef source = MIDIGetSource((int)[listInputSources() indexOfObject:[inputDevices objectAtIndex:i]]); //Or something like that..
+            
+            NSLog(@"Getting input from source: %d", (int)[listInputSources() indexOfObject:[inputDevices objectAtIndex:i]]);
+            
+            CFStringRef endpointName = NULL;
+            MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
+            char endpointNameC[255];
+            CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
+            
+            NSString *input = [inputDevices objectAtIndex:i];
+            
+            NSLog(@"Getting input from %@", input);
+            
+            //This needs to be fixed, it isn't passing the name properly.
+            MIDIPortConnectSource(inPort, source, (void*)[input UTF8String]);
+            
+        }
+    } else {
+        
+        //Default: If no input sources have been selected.
+        MIDIEndpointRef source = MIDIGetSource(0);
+        
+        CFStringRef endpointName = NULL;
+        MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
+        char endpointNameC[255];
+        CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
+        
+        NSString *input = @"Launchpad";
+        
+        NSLog(@"Getting input from %@", input);
+        
+        //This needs to be fixed, it isn't passing the name properly.
+        MIDIPortConnectSource(inPort, source, (void*)[input UTF8String]);
+    }
+    
+    
+//    MIDIEndpointRef source = MIDIGetSource(0);
+    MIDIEndpointRef source = MIDIGetSource(4);
     
     
     CFStringRef endpointName = NULL;
@@ -45,7 +104,9 @@ void setupMidiInput()
     char endpointNameC[255];
     CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
     
-    NSString *input = @"Launchpad";
+//    NSString *input = @"Launchpad";
+    NSString *input = @"Controls";
+    
     
     NSLog(@"Getting input from %@", input);
     
@@ -82,20 +143,27 @@ static void	MIDIRead(const MIDIPacketList *pktlist, void *refCon, void *srcConnR
 			
             MusicDeviceMIDIEvent(instrumentUnit, midiStatus, note, velocity, 0);
             
-            NSLog(@"%s - NOTE : %d | %d", source, note, velocity);
-            
-            if(velocity != 0)
-            {
-                midiNoteOut(note, 14);
-            } else {
-                midiNoteOut(note, 121);
-            }
+//            NSLog(@"%s - NOTE : %d | %d", source, note, velocity);
+
+
+            noteCallback(note, velocity);
+        
+
+//            
+//            if(velocity != 0)
+//            {
+//                midiNoteOut(note, 14);
+//            } else {
+//                midiNoteOut(note, 121);
+//            }
         
             
             
 		} else {
             
             NSLog(@"%s - CNTRL  : %d | %d", source, note, velocity);
+            
+            controlCallback(note, velocity);
             
         }
 		
@@ -222,35 +290,52 @@ void disposeOutput ()
 {
     self = [super init];
     if (self) {
+        
+    NSLog(@"Init");
+        
+
+//        void setCallbackDelegate ( MidiIO* del ) { delegate = del; }
+        
+
+//        [[self myDelegate] test];
 
         //For midi in:
-        disposeInput();
-        disposeOutput();
+//        disposeInput();
+//        disposeOutput();
         
-        setupMidiInput();
+//        setupMidiInput();
         
         //For midi out:
-        initMIDIOut();
+//        initMIDIOut();
         
-        for(int i=0; i<127; i++)
-        {
-            midiNoteOut(i, 127);
-        }
-        
-        for(int i=0; i<127; i++)
-        {
-            midiNoteOut(i, 4);
-        }
+//        for(int i=0; i<127; i++)
+//        {
+//            midiNoteOut(i, 127);
+//        }
+//        
+//        for(int i=0; i<127; i++)
+//        {
+//            midiNoteOut(i, 4);
+//        }
 
         
+        
     }
+    
+
     return self;
 }
 
 
-
-
 #pragma mark Obj-C Input methods
+
+-(void)initMidiInput
+{
+    disposeInput();
+    setupMidiInput();
+    
+    setCallbackDelegate([self myDelegate]);
+}
 
 -(void)reInitializeMIDIInput
 {
@@ -286,6 +371,11 @@ void disposeOutput ()
 
 #pragma mark Obj-C Output methods
 
+-(void)initMidiOut
+{
+    disposeOutput();
+    initMIDIOut();
+}
 
 -(NSArray *)outputDevices
 {

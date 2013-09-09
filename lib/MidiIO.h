@@ -10,12 +10,27 @@
 #import <CoreMIDI/CoreMIDI.h>
 #import <AudioUnit/AudioUnit.h>
 
-@interface MidiIO : NSObject
+
+@protocol MidiIODelegate <NSObject>
+
+-(void)recievedNote:(int)n :(int)v;
+-(void)recievedControl:(int)n :(int)v;
+
+@end
+
+
+@interface MidiIO : NSObject <MidiIODelegate>
+{
+    id <MidiIODelegate> myDelegate;
+}
+
+@property (assign) id <MidiIODelegate> myDelegate;
 
 -(id)init;
 
 /* MIDI Input */
 
+-(void)initMidiInput;
 -(void)reInitializeMIDIInput;
 -(NSArray *)inputDevices;
 
@@ -25,15 +40,15 @@
 -(void)disposeInputDevices;
 
 /* MIDI Output */
+
+-(void)initMidiOut;
+
 -(NSArray *)outputDevices;
 
 -(void)addOutputDevice:(NSString *)device;
 -(void)removeOutputDevice:(NSString *)device;
 
 -(void)sendNote:(int)pitch :(int)vel;
-
-
-
 
 
 
@@ -46,4 +61,11 @@
 
 -(void)disposeOutputDevices;
 
+
+//PASSBACK
+-(void)noteWasRecieved:(int)note :(int)velocity;
+
+
+
 @end
+

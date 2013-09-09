@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #import "MidiIO.h"
 
-@interface AppDelegate : NSObject <NSApplicationDelegate>
+@interface AppDelegate : NSObject <NSApplicationDelegate, MidiIODelegate>
 {
     MidiIO *midi;
 }
