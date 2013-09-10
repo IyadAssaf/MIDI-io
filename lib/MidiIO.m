@@ -78,19 +78,24 @@ void setupMidiInput()
         
         NSLog(@"DEFAULT");
         
-        //Default: If no input sources have been selected.
-        MIDIEndpointRef source = MIDIGetSource(0);
+        //Default gets input from all devices
+        for (int i=0; i<[listOutputSources() count]; i++) {
+            
+            MIDIEndpointRef source = MIDIGetSource(i);
+            
+            CFStringRef endpointName = NULL;
+            MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
+            char endpointNameC[255];
+            CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
+
+            NSString *input = [listOutputSources() objectAtIndex:i];
+            NSLog(@"Getting input from %@", input);
+
+            const char *inputCC = MakeStringCopy([input UTF8String]);
+            MIDIPortConnectSource(inPort, source, (void*)inputCC);
+        }
         
-        CFStringRef endpointName = NULL;
-        MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
-        char endpointNameC[255];
-        CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
-        
-        NSString *input = @"Launchpad";
-        NSLog(@"Getting input from %@", input);
-        
-        const char *inputCC = MakeStringCopy([input UTF8String]);
-        MIDIPortConnectSource(inPort, source, (void*)inputCC);
+      
     }
 
 }

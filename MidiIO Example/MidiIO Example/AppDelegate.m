@@ -29,6 +29,7 @@
     [midi initMidiOut];
 
     
+    [midi sendMIDINoteToDevice:1 :127 :@"Launchpad"];
     [midi sendMIDIControlToDevice:1 :0 :@"Controls"];
     
 }
