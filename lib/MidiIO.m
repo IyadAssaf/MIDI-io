@@ -28,8 +28,7 @@ MIDIEndpointRef         midiOut;
 NSMutableArray          *outputDevices;
 
 
-
-/* SHOULD WORK */
+/* C Callback to Obj-C delegate */
 
 // need to have a reference to the object, of course
 static MidiIO *delegate = NULL;
@@ -95,6 +94,8 @@ void setupMidiInput()
     }
 
 }
+
+
 
 
 /* Conversion of NSString to const char * */
@@ -231,7 +232,43 @@ void midiNoteOut (int note, int velocity)
         
     }
     
+}
+
+
+
+void midiDataToDevice (int note, int velocity, NSString *device, bool isNoteOut)
+{
+    int type;
     
+    if(isNoteOut)
+    {
+        //Noteout data
+        type = 0x90;
+        
+    } else {
+        //Control data
+        type = 0xB0;
+    }
+
+    const UInt8 outData[] = {  type , note , velocity};
+    
+    
+    //Create a the packets that will be sent to the device.
+    Byte packetBuffer[sizeof(MIDIPacketList)];
+    MIDIPacketList *packetList = (MIDIPacketList *)packetBuffer;
+    ByteCount size = sizeof(outData);
+    
+    MIDIPacketListAdd(packetList,
+                      sizeof(packetBuffer),
+                      MIDIPacketListInit(packetList),
+                      0,
+                      size,
+                      outData);
+    
+    NSLog(@"index of %@: %lu", device, (unsigned long)[listOutputSources() indexOfObject:device]);
+    
+    MIDIEndpointRef outputEndpoint = MIDIGetDestination([listOutputSources() indexOfObject:device]);
+    MIDISend(outputPort, outputEndpoint, packetList);
     
 }
 
@@ -290,6 +327,8 @@ void disposeOutput ()
     
     setCallbackDelegate([self myDelegate]);
 }
+
+
 
 -(void)reInitializeMIDIInput
 {
@@ -363,9 +402,19 @@ void disposeOutput ()
 
 }
 
--(void)sendNote:(int)pitch :(int)vel;
+-(void)sendMIDINoteToDevice:(int)pitch :(int)velocity
 {
-    midiNoteOut(pitch, vel);
+    midiNoteOut(pitch, velocity);
+}
+
+-(void)sendMIDINoteToDevice:(int)note :(int)velocity :(NSString *)device
+{
+    midiDataToDevice(note, velocity, device, 1);
+}
+
+-(void)sendMIDIControlToDevice:(int)note :(int)velocity :(NSString *)device
+{
+    midiDataToDevice(note, velocity, device, 0);
 }
 
 

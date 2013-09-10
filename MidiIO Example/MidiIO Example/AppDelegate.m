@@ -15,17 +15,21 @@
     midi = [[MidiIO alloc] init];
     [midi setMyDelegate:self];
     
-    [midi addInputDevice:@"Launchpad"];
-    [midi addInputDevice:@"Controls"];
-    [midi addInputDevice:@"PCR 1"];
-    [midi addInputDevice:@"PCR 2"];
-    [midi addInputDevice:@"PCR MIDI IN"];
+//    [midi addInputDevice:@"Launchpad"];
+//    [midi addInputDevice:@"Controls"];
+//    [midi addInputDevice:@"PCR 1"];
+//    [midi addInputDevice:@"PCR 2"];
+//    [midi addInputDevice:@"PCR MIDI IN"];
     
-    [midi addOutputDevice:@"Controls"];
-    [midi addOutputDevice:@"Launchpad"];
+//    [midi addOutputDevice:@"Controls"];
+//    [midi addOutputDevice:@"Launchpad"];
+  
     
     [midi initMidiInput];
     [midi initMidiOut];
+
+    
+    [midi sendMIDIControlToDevice:1 :0 :@"Controls"];
     
 }
 
@@ -47,12 +51,12 @@
 
     for(int i=0; i<127; i++)
     {
-        [midi sendNote:i :67];
+        [midi sendMIDINoteToDevice:i :67];
     }
     
     for(int i=0; i<127; i++)
     {
-        [midi sendNote:i :42];
+        [midi sendMIDINoteToDevice:i :42];
     }
 
 }
@@ -69,7 +73,7 @@
     
     for(int i=0; i<127; i++)
     {
-        [midi sendNote:i :0];
+        [midi sendMIDINoteToDevice:i :0];
     }
 }
 
@@ -84,11 +88,11 @@
     
     if(velocity != 0)
     {
-        [midi sendNote:note :14];
+        [midi sendMIDINoteToDevice:note :14];
     } else {
-        [midi sendNote:note :121];
+        [midi sendMIDINoteToDevice:note :121];
     }
-    
+   
 }
 
 -(void)recievedControl:(int)note :(int)velocity :(NSString *)device
