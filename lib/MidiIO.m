@@ -67,7 +67,7 @@ void setupMidiInput()
             CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
             
             NSString *input = [inputDevices objectAtIndex:i];
-            NSLog(@"Getting input from %@", input);
+            NSLog(@"Getting input from %@ (%d)", input, i);
             
             const char *inputCC = MakeStringCopy([input UTF8String]);
             
@@ -94,7 +94,6 @@ void setupMidiInput()
             const char *inputCC = MakeStringCopy([input UTF8String]);
             MIDIPortConnectSource(inPort, source, (void*)inputCC);
         }
-        
       
     }
 
@@ -289,7 +288,7 @@ NSArray *listOutputSources ()
         MIDIObjectGetStringProperty(source, kMIDIPropertyName, &endpointName);
         char endpointNameC[255];
         CFStringGetCString(endpointName, endpointNameC, 255, kCFStringEncodingUTF8);
-//        NSLog(@"Output device %d - %s", i, endpointNameC);
+        NSLog(@"Output device %d - %s", i, endpointNameC);
         
         NSString *NSEndpoint = [NSString stringWithUTF8String:endpointNameC];
         [outputArray addObject: NSEndpoint];
@@ -304,6 +303,61 @@ void disposeOutput ()
     MIDIPortDispose(outputPort);
 }
 
+
+
+#pragma mark MIDI utility functions 
+
+void completionProc(MIDISysexSendRequest *request)
+{
+    //
+}
+
+
+
+
+
+void sendSysexMessageToDevice(NSString *sysex, NSString *device)
+{
+    NSString *nativeCommand = [sysex stringByReplacingOccurrencesOfString:@" " withString:@""];
+    
+    NSMutableData *commandToSend = [[NSMutableData alloc] init];
+    
+    unsigned char whole_byte;
+    
+    char bytes_chars[3] = {'\3', '\0', '\0' };
+    
+    int commandLength = (int)[nativeCommand length];
+    
+    for(int i=0; i<commandLength/2; i++)
+    {
+        bytes_chars[0] = [nativeCommand characterAtIndex:i*2];
+        
+        bytes_chars[1] = [nativeCommand characterAtIndex:i*2+1];
+        
+        whole_byte = strtol(bytes_chars, NULL, 16);
+        
+        [commandToSend appendBytes:&whole_byte length:1];
+    }
+    
+    const unsigned char *p = (const unsigned char *)CFDataGetBytePtr((CFDataRef)commandToSend);
+    
+//    MIDIEndpointRef destRef = MIDIGetDestination([listOutputSources() indexOfObject:device]);
+    MIDIEndpointRef destRef = MIDIGetDestination(3);
+    
+    NSLog(@"Sending to index %lu", [listOutputSources() indexOfObject:device]);
+    
+    MIDISysexSendRequest sendRequest;
+    sendRequest.destination = destRef;
+    sendRequest.data = (Byte *)p;
+    sendRequest.bytesToSend = (int)[commandToSend length];
+    sendRequest.complete = 0;
+    sendRequest.completionProc = completionProc;
+    sendRequest.completionRefCon = &sendRequest;
+    
+    NSLog(@"Sending: %s", p);
+    MIDISendSysex(&sendRequest);
+    
+}
 
 
 
@@ -426,6 +480,12 @@ void disposeOutput ()
 -(void)disposeOutputDevices
 {
     disposeOutput();
+}
+
+
+-(void)sendSysexToDevice:(NSString *)sysex :(NSString *)device
+{
+    sendSysexMessageToDevice(sysex, device);
 }
 
 @end

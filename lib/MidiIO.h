@@ -57,6 +57,10 @@
 -(void)sendMIDINoteToDevice:(int)note :(int)velocity;
 -(void)sendMIDIControlToDevice:(int)note :(int)velocity :(NSString *)device;
 
+
+
+-(void)sendSysexToDevice:(NSString *)sysex :(NSString *)device;
+
 -(void)disposeOutputDevices;
 
 

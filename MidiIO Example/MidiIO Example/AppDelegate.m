@@ -27,10 +27,15 @@
     
     [midi initMidiInput];
     [midi initMidiOut];
+    
 
     
     [midi sendMIDINoteToDevice:1 :127 :@"Launchpad"];
     [midi sendMIDIControlToDevice:1 :0 :@"Controls"];
+    
+    //Not working yet
+    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 04 01 00 00 00 00 00 00 00 "];
+
     
 }
 
