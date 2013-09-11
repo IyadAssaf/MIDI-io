@@ -13,6 +13,9 @@ The project aims to make getting and sending MIDI events stupidly easy so people
      
     //Send a control note to a device:
     [midi sendMIDIControlToDevice:1 :0 :@"Controls"];
+    
+    //Send a sysex command to a device:
+    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 06 F7"];
       
       
 ###Callbacks:
@@ -25,3 +28,4 @@ The project aims to make getting and sending MIDI events stupidly easy so people
 
 
 
+###This project is open for contribution, feel free to contribute to make using CoreMIDI easy to use on OSX!
