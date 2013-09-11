@@ -14,6 +14,9 @@
 {
     midi = [[MidiIO alloc] init];
     [midi setMyDelegate:self];
+
+    /* Optionally add input and output devices */
+    /* Defaults to all devices */
     
 //    [midi addInputDevice:@"Launchpad"];
 //    [midi addInputDevice:@"Controls"];
@@ -23,27 +26,35 @@
     
 //    [midi addOutputDevice:@"Controls"];
 //    [midi addOutputDevice:@"Launchpad"];
-  
     
     [midi initMidiInput];
     [midi initMidiOut];
     
 
-//    for(int i=0; i<32; i++)
-//    {
-//        for(int e=0; e<127; e++)
-//        {
-//            [midi sendMIDIControlToDevice:i :e :@"Controls"];
-//        }
-//    
-//    }
-//    [midi sendMIDINoteToDevice:1 :127 :@"Launchpad"];
-
     
-//    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 20 01 F7" ]; //Decouple encoders from their LED value
-//    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 20 00 F7" ]; //Couple encoders to their LED value
+    /* Sending note test */
+    for(int i=0; i<32; i++)
+    {
+        for(int e=0; e<127; e++)
+        {
+            [midi sendMIDIControlToDevice:i :e :@"Controls"];
+        }
+    
+    }
+    [midi sendMIDINoteToDevice:1 :127 :@"Launchpad"];
     
     
+    
+    /* Sysex send commands */
+    //    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 1D 01 08 09 16 17 24 25 32 F7"];
+    //    [midi sendSysexToDevice:@"Controls" :walkModeStr];
+    //    [midi sendSysexToDevice:@"Controls" :@" F0 00 01 61 04 06 F7"]; //Factory reset
+    //    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 20 01 F7" ]; //Decouple encoders from their LED value
+    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 20 00 F7" ]; //Couple encoders to their LED value
+    
+    
+    
+    /* Walk mode */
     int one, two, three, four, five, six, seven, eight;
     
     one = 127;
@@ -56,11 +67,29 @@
     eight = 127;
     
     NSString *walkModeStr = [NSString stringWithFormat:@"F0 00 01 61 04 1D %d %d %d %d %d %d %d %d", one, two, three, four, five, six, seven, eight];
+
     
-//    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 1D 01 08 09 16 17 24 25 32 F7"];
-    [midi sendSysexToDevice:@"Controls" :walkModeStr];
+    // 1F : Set LED Ring indicators
+//    [midi sendSysexToDevice:@"Controls" :[self buildSysexCode:@"F0 00 01 61 04" :@"1F 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01" :@" F7"]];
     
+    [midi sendSysexToDevice:@"Controls" :[self setLEDRingIndicators:127]];
     
+}
+
+-(NSString *)buildSysexCode:(NSString *)header :(NSString *)commandID :(NSString *)cmd
+{
+    return [NSString stringWithFormat:@"%@ %@ %@", header, commandID, cmd];
+    
+}
+
+-(NSString *)setLEDRingIndicators:(int)velocity
+{
+    NSString *header = @"F0 00 01 61 04";
+    NSString *footer = @"F7";
+    
+    NSString *encoders = [NSString stringWithFormat:@" %d 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01 08 01", velocity];
+    
+    return [NSString stringWithFormat:@"%@ %@ %@", header, encoders, footer];
 }
 
 -(void)applicationWillTerminate:(NSNotification *)notification
@@ -131,7 +160,9 @@
     
     self.monitor.stringValue = [NSString stringWithFormat:@"Source: %@, Control: %d, Velocity: %d",device, note, velocity];
     
-    [midi sendMIDIControlToDevice:note :velocity :@"Controls"];
+    [midi sendMIDIControlToDevice:1 :velocity :@"Controls"];
+    
+
     
 }
 
