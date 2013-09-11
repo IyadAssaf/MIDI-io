@@ -29,13 +29,37 @@
     [midi initMidiOut];
     
 
-    
-    [midi sendMIDINoteToDevice:1 :127 :@"Launchpad"];
-    [midi sendMIDIControlToDevice:1 :0 :@"Controls"];
-    
-    //Not working yet
-    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 04 01 00 00 00 00 00 00 00 "];
+//    for(int i=0; i<32; i++)
+//    {
+//        for(int e=0; e<127; e++)
+//        {
+//            [midi sendMIDIControlToDevice:i :e :@"Controls"];
+//        }
+//    
+//    }
+//    [midi sendMIDINoteToDevice:1 :127 :@"Launchpad"];
 
+    
+//    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 20 01 F7" ]; //Decouple encoders from their LED value
+//    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 20 00 F7" ]; //Couple encoders to their LED value
+    
+    
+    int one, two, three, four, five, six, seven, eight;
+    
+    one = 127;
+    two = 127;
+    three = 127;
+    four = 127;
+    five = 127;
+    six = 127;
+    seven = 127;
+    eight = 127;
+    
+    NSString *walkModeStr = [NSString stringWithFormat:@"F0 00 01 61 04 1D %d %d %d %d %d %d %d %d", one, two, three, four, five, six, seven, eight];
+    
+//    [midi sendSysexToDevice:@"Controls" :@"F0 00 01 61 04 1D 01 08 09 16 17 24 25 32 F7"];
+    [midi sendSysexToDevice:@"Controls" :walkModeStr];
+    
     
 }
 
@@ -106,6 +130,8 @@
     NSLog(@"Recieved control: %d with velocity %d from device %@", note, velocity, device);
     
     self.monitor.stringValue = [NSString stringWithFormat:@"Source: %@, Control: %d, Velocity: %d",device, note, velocity];
+    
+    [midi sendMIDIControlToDevice:note :velocity :@"Controls"];
     
 }
 
